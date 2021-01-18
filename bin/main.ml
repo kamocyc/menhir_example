@@ -6,9 +6,17 @@ let print_location lexbuf =
   
   
 let () =
-  let l = Lexing.from_string "{aaa: 10.0, bbb: null, ccc: {ddd: {}, eee: 100}}" in
+  let lexbuf = Lexing.from_string "{aaa: 10.0, bbb: null, ccc: {ddd: {}, eee: 100}}" in
+  (* let lexbuf = Lexing.from_string "{aaa: 10.0, bbb: null#, ccc: {ddd: {}, eee: 100}}" in *)
+  (* let lexbuf = Lexing.from_string "{aaa: 10.0, bbb: null ccc: {ddd: {}, eee: 100}}" in *)
   let p =
-    try
-      Parser.prog Lexer.token l
-    with _ -> print_endline @@ print_location l; failwith "a" in
+    try Parser.prog Lexer.token lexbuf with
+    | (Lexer.SyntaxError msg) as a ->
+      print_endline msg;
+      print_endline @@ print_location lexbuf;
+      raise a
+    | Parser.Error as b->
+      print_string "Parse rrror: ";
+      print_endline @@ print_location lexbuf;
+      raise b in
   print_endline @@ Util.show_object p
